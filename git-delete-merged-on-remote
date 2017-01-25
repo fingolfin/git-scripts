@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -e
+
+#
+# This script takes the name of a remote, and of a local branch or ref
+# (defaulting to "master"). It then iterates over all branches available on
+# the remote, and checks whether that remote branch has been merged or rebased
+# into the given local branch.
+#
+
+if [[ "$#" -eq 1 ]]; then
+    remote=$1
+    base_branch=master
+elif [[ "$#" -eq 2 ]]; then
+    remote=$1
+    base_branch=$2
+else
+    echo "Error, usage: $(basename $0) <REMOTE> [<LOCAL-BRANCH>]"
+    exit 1
+fi
+
+# ensure the given remote name is valid
+remote_url=$(git remote get-url $remote)
+
+# ensure the given base branch is a valid ref
+base_rev=$(git rev-list -n1 $base_branch)
+
+# make sure we have an up-to-date list of branches on that remote
+# echo "Fetching remote $remote"
+# git fetch --prune $remote
+
+# iterate over the remote branches
+echo "Iterating over branches of remote $remote..."
+to_delete=""
+for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/$remote); do
+    remote_branch=${branch#$remote/}  # remove prefix
+    if [ $remote_branch = $base_branch ] ; then
+        continue;
+    fi
+    echo -n "." # progress bar
+
+    diff=$(git rev-list -n1 --cherry-pick --right-only --no-merges "$base_branch"..."$branch")
+    if [ -z "$diff" ]; then
+        #echo $branch
+        to_delete="$to_delete $remote_branch"
+        # TODO: actually delete? or perhaps leave that to the user...
+        # git push --delete $remote $remote_branch
+    fi
+done
+echo
+
+if [[ -z $to_delete ]] ; then
+    echo "No merged or rebased remote branches found"
+else
+    echo "To delete merged branches on remote $remote, enter this command:"
+    echo "git push --delete $remote$to_delete"
+fi

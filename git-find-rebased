@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+
+# This script take the name of a branch (or any ref) as argument. It then
+# iterates over all locals branches and check for each whether it has been
+# merged into or rebased onto the given base branch. The names of these
+# branches are printed to stdout.
+
+if [[ "$#" -eq 1 ]]; then
+    base_branch=$1
+else
+    echo "Error, usage: $(basename $0) <BASE-BRANCH>"
+    exit 1
+fi
+
+# ensure the given base branch is a valid ref
+base_rev=$(git rev-list -n1 $base_branch)
+
+for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+    if [ $branch = $base_branch ] ; then
+        continue;
+    fi
+#     if [ $(git rev-list -n1 $branch) = $base_rev ] ; then
+#         continue;
+#     fi
+
+    diff=$(git rev-list -n1 --cherry-pick --right-only --no-merges "$base_branch"..."$branch")
+    if [ -z "$diff" ]; then
+        echo $branch
+    fi
+done

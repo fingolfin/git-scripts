@@ -10,9 +10,12 @@ set -e
 if [[ "$#" -eq 1 ]]; then
     base_branch=$1
 else
-    echo "Error, usage: $(basename $0) <BASE-BRANCH>"
-    exit 1
+    base_branch="master"
+#     echo "Error, usage: $(basename $0) <BASE-BRANCH>"
+#     exit 1
 fi
+
+>&2 echo "Finding branches merged into '$base_branch' (possibly after rebasing)..."
 
 # ensure the given base branch is a valid ref
 base_rev=$(git rev-list -n1 $base_branch)

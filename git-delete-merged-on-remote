@@ -27,8 +27,8 @@ remote_url=$(git remote get-url $remote)
 base_rev=$(git rev-list -n1 $base_branch)
 
 # make sure we have an up-to-date list of branches on that remote
-# echo "Fetching remote $remote"
-# git fetch --prune $remote
+echo "Fetching remote $remote"
+git fetch --prune $remote
 
 # iterate over the remote branches
 echo "Iterating over branches of remote $remote..."

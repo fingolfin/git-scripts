@@ -20,16 +20,23 @@ fi
 # ensure the given base branch is a valid ref
 base_rev=$(git rev-list -n1 $base_branch)
 
+to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
-    if [ $branch = $base_branch ] ; then
-        continue;
-    fi
-#     if [ $(git rev-list -n1 $branch) = $base_rev ] ; then
-#         continue;
-#     fi
+    case $branch in
+      $base_branch | "hpcgap-default" | "stable"*) continue ;;
+    esac
+    echo -n "." # progress bar
 
     diff=$(git rev-list -n1 --cherry-pick --right-only --no-merges "$base_branch"..."$branch")
     if [ -z "$diff" ]; then
-        echo $branch
+        to_delete="$to_delete $branch"
     fi
 done
+echo
+
+if [[ -z $to_delete ]] ; then
+    echo "No merged or rebased branches found"
+else
+    echo "To delete merged branches, enter this command:"
+    echo "git branch -D $to_delete"
+fi

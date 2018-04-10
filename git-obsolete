@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+git find-rebased master
+git delete-merged-on-remote fingolfin

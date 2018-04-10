@@ -27,11 +27,11 @@ remote_url=$(git remote get-url $remote)
 base_rev=$(git rev-list -n1 $base_branch)
 
 # make sure we have an up-to-date list of branches on that remote
-echo "Fetching remote $remote"
-git fetch --prune $remote
+#echo "Fetching remote $remote"
+git fetch --prune --quiet $remote
 
 # iterate over the remote branches
-echo "Iterating over branches of remote $remote..."
+#echo "Iterating over branches of remote $remote..."
 to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/$remote); do
     remote_branch=${branch#$remote/}  # remove prefix
@@ -48,11 +48,12 @@ for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/$remot
         # git push --delete $remote $remote_branch
     fi
 done
-echo
+printf "\r\033[0K" # clear progress bar
 
 if [[ -z $to_delete ]] ; then
     echo "No merged or rebased remote branches found"
 else
-    echo "To delete merged branches on remote $remote, enter this command:"
+#    echo "To delete merged branches on remote $remote, enter this command:"
     echo "git push --delete $remote$to_delete"
+    git push --delete $remote$to_delete
 fi

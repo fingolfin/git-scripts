@@ -1,4 +1,16 @@
 #!/bin/sh
 set -e
-git find-rebased master
-git delete-merged-on-remote fingolfin
+
+if [[ "$#" -eq 1 ]]; then
+    remote=$1
+    base_branch=master
+elif [[ "$#" -eq 2 ]]; then
+    remote=$1
+    base_branch=$2
+else
+    echo "Error, usage: $(basename $0) <REMOTE> [<LOCAL-BRANCH>]"
+    exit 1
+fi
+
+git find-rebased ${base_branch}
+git delete-merged-on-remote ${remote} ${base_branch}

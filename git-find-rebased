@@ -10,10 +10,9 @@ set -e
 if [[ "$#" -eq 1 ]]; then
     base_branch=$1
 else
-    base_branch="master"
-#     echo "Error, usage: $(basename $0) <BASE-BRANCH>"
-#     exit 1
+    base_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 fi
+#echo "Using $base_branch as reference"
 
 #>&2 echo "Finding branches merged into '$base_branch' (possibly after rebasing)..."
 
@@ -23,7 +22,7 @@ base_rev=$(git rev-list -n1 $base_branch)
 to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
     case $branch in
-      $base_branch | hpcgap-default | stable* | bisect* | alt-gc ) continue ;;
+      $base_branch | hpcgap-default | stable* | bisect* | master | trunk | gh-pages ) continue ;;
     esac
     echo -n "." # progress bar
 

@@ -14,7 +14,7 @@ if [[ "$#" -eq 1 ]]; then
     base_branch=master
 elif [[ "$#" -eq 2 ]]; then
     remote=$1
-    base_branch=$2
+    base_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 else
     echo "Error, usage: $(basename $0) <REMOTE> [<LOCAL-BRANCH>]"
     exit 1
@@ -35,12 +35,9 @@ git fetch --prune --quiet $remote
 to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/$remote); do
     remote_branch=${branch#$remote/}  # remove prefix
-    if [ $remote_branch = HEAD ] ; then
-        continue;
-    fi
-    if [ $remote_branch = $base_branch ] ; then
-        continue;
-    fi
+    case $remote_branch in
+      $base_branch | HEAD | stable* | bisect* | master | trunk | gh-pages ) continue ;;
+    esac
     echo -n "." # progress bar
 
     diff=$(git rev-list -n1 --cherry-pick --right-only --no-merges "$base_branch"..."$branch")

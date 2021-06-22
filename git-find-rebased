@@ -10,7 +10,7 @@ set -e
 if [[ "$#" -eq 1 ]]; then
     base_branch=$1
 else
-    base_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+    base_branch=$(git get-head origin)
 fi
 #echo "Using $base_branch as reference"
 

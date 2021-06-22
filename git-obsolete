@@ -3,7 +3,7 @@ set -e
 
 if [[ "$#" -eq 1 ]]; then
     remote=$1
-    base_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+    base_branch=$(git get-head $remote)
 elif [[ "$#" -eq 2 ]]; then
     remote=$1
     base_branch=$2

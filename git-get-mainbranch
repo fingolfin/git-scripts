@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -e
+
+#
+# This script takes the name of a remote and prints its HEAD
+#
+
+if [[ "$#" -eq 0 ]]; then
+    remote=origin
+elif [[ "$#" -eq 1 ]]; then
+    remote=$1
+else
+    echo "Error, usage: $(basename $0) <REMOTE>"
+    exit 1
+fi
+
+# ensure the given remote name is valid
+git remote get-url "${remote}" > /dev/null
+
+# check if the HEAD is present and if not, fetch it
+if ! git symbolic-ref "refs/remotes/${remote}/HEAD" > /dev/null 2> /dev/null 
+then
+    git fetch "${remote}" > /dev/null 2> /dev/null 
+    git remote set-head "${remote}" --auto > /dev/null
+fi
+git symbolic-ref "refs/remotes/${remote}/HEAD" | sed "s@^refs/remotes/${remote}/@@"

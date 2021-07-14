@@ -11,7 +11,7 @@ set -e
 
 if [[ "$#" -eq 1 ]]; then
     remote=$1
-    base_branch=$(git get-head $remote)
+    base_branch=$(git get-mainbranch $remote)
 elif [[ "$#" -eq 2 ]]; then
     remote=$1
     base_branch=$2

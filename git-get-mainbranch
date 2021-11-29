@@ -3,12 +3,13 @@
 set -e
 
 #
-# This script takes the name of a remote and prints its HEAD
+# This script takes the name of a remote and prints a symbolic name for its
+# HEAD; typically that is the name of its `master` or `main` branch; but I've
+# also seen different values, such as `gh-pages`, `trunk`, etc.
 #
-
-if [[ "$#" -eq 0 ]]; then
+if test $# -eq 0 ; then
     remote=origin
-elif [[ "$#" -eq 1 ]]; then
+elif test $# -eq 1 ; then
     remote=$1
 else
     echo "Error, usage: $(basename $0) <REMOTE>"

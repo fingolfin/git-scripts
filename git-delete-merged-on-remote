@@ -9,14 +9,31 @@ set -e
 # into the given local branch.
 #
 
-if [[ "$#" -eq 1 ]]; then
+while test $# -ne 0
+do
+    case "$1" in
+    -n|--dry-run)
+        # -n, --dry-run
+        #    Don't actually remove anything, just show what would be done.
+        dry_run=1
+        ;;
+    --)
+        shift
+        break;;
+    *)
+        break;;
+    esac
+    shift
+done
+
+if test $# -eq 1 ; then
     remote=$1
     base_branch=$(git get-mainbranch $remote)
-elif [[ "$#" -eq 2 ]]; then
+elif test $# -eq 2 ; then
     remote=$1
     base_branch=$2
 else
-    echo "Error, usage: $(basename $0) <REMOTE> [<LOCAL-BRANCH>]"
+    echo "Error, usage: $(basename $0) [-n | --dry-run] <REMOTE> [<LOCAL-BRANCH>]"
     exit 1
 fi
 
@@ -55,5 +72,7 @@ if [[ -z $to_delete ]] ; then
 else
 #    echo "To delete merged branches on remote $remote, enter this command:"
     echo "git push --delete $remote$to_delete"
-    git push --delete $remote$to_delete
+    if test -z "$dry_run" ; then
+        git push ${dry_run} --delete $remote$to_delete
+    fi
 fi

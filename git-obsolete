@@ -1,16 +1,33 @@
 #!/bin/sh
 set -e
 
-if [[ "$#" -eq 1 ]]; then
+while test $# -ne 0
+do
+    case "$1" in
+    -n|--dry-run)
+        # -n, --dry-run
+        #    Don't actually remove anything, just show what would be done.
+        dry_run="-n"
+        ;;
+    --)
+        shift
+        break;;
+    *)
+        break;;
+    esac
+    shift
+done
+
+if test "$#" -eq 1 ; then
     remote=$1
     base_branch=$(git get-mainbranch $remote)
-elif [[ "$#" -eq 2 ]]; then
+elif test "$#" -eq 2 ; then
     remote=$1
     base_branch=$2
 else
-    echo "Error, usage: $(basename $0) <REMOTE> [<LOCAL-BRANCH>]"
+    echo "Error, usage: $(basename $0) [-n | --dry-run] <REMOTE> [<LOCAL-BRANCH>]"
     exit 1
 fi
 
-git find-rebased ${base_branch}
-git delete-merged-on-remote ${remote} ${base_branch}
+git find-rebased ${dry_run} ${base_branch}
+git delete-merged-on-remote ${dry_run} ${remote} ${base_branch}

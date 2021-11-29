@@ -7,17 +7,31 @@ set -e
 # merged into or rebased onto the given base branch. The names of these
 # branches are printed to stdout.
 
-if [[ "$#" -eq 1 ]]; then
+while test $# -ne 0
+do
+    case "$1" in
+    -n|--dry-run)
+        # -n, --dry-run
+        #    Don't actually remove anything, just show what would be done.
+        dry_run=1
+        ;;
+    --)
+        shift
+        break;;
+    *)
+        break;;
+    esac
+    shift
+done
+
+if test $# -eq 1 ; then
     base_branch=$1
 else
     base_branch=$(git get-mainbranch origin)
 fi
-#echo "Using $base_branch as reference"
-
-#>&2 echo "Finding branches merged into '$base_branch' (possibly after rebasing)..."
 
 # ensure the given base branch is a valid ref
-base_rev=$(git rev-list -n1 $base_branch)
+git rev-list -n1 "$base_branch" > /dev/null
 
 to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
@@ -38,5 +52,7 @@ if [[ -z $to_delete ]] ; then
 else
     #echo "To delete merged branches, enter this command:"
     echo "git branch -D $to_delete"
-    git branch -D $to_delete
+    if test -z "$dry_run" ; then
+        git branch -D $to_delete
+    fi
 fi

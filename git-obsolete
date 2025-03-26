@@ -29,5 +29,7 @@ else
     exit 1
 fi
 
+git fetch --all --prune
+
 git find-rebased ${dry_run} ${base_branch}
 git delete-merged-on-remote ${dry_run} ${remote} ${base_branch}

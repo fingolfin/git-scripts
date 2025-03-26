@@ -51,6 +51,9 @@ git fetch --prune --quiet $remote
 #echo "Iterating over branches of remote $remote..."
 to_delete=""
 for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/$remote); do
+    case $branch  in
+      "$remote" ) continue ;;
+    esac
     remote_branch=${branch#$remote/}  # remove prefix
     case $remote_branch in
       $base_branch | HEAD | stable* | bisect* | master | trunk | gh-pages ) continue ;;

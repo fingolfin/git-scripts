@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+sort_mode="age"
+refs="refs/heads"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -n|--name) sort_mode="name" ;;
+    -a|--age)  sort_mode="age" ;;
+    -r|--remote|--remotes) refs="refs/remotes" ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: git-branch-date [--name|--age] [--remote]
+
+  --name    sort by branch name
+  --age     sort by last modification time (default)
+  --remote  show remote-tracking branches
+EOF
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+case "$sort_mode" in
+  name) sort_key="refname" ;;
+  age)  sort_key="-committerdate" ;;
+esac
+
+now=$(date +%s)
+
+red=$'\033[31m'
+green_bold=$'\033[1;32m'
+yellow=$'\033[33m'
+cyan=$'\033[36m'
+dim=$'\033[2m'
+reset=$'\033[0m'
+
+git for-each-ref "$refs" \
+  --sort="$sort_key" \
+  --format='%(HEAD)|%(refname:short)|%(committerdate:unix)|%(committerdate:short)|%(committerdate:relative)' |
+while IFS='|' read -r head branch ts shortdate rel; do
+  age_days=$(( (now - ts) / 86400 ))
+
+  if [[ "$head" == "*" ]]; then
+    marker="*"
+    bcolor="$green_bold"
+  else
+    marker=" "
+    bcolor="$red"
+  fi
+
+  printf '%s %b%-56s%b  %b%6dd%b  %b%s%b\n' \
+    "$marker" \
+    "$bcolor" "$branch" "$reset" \
+    "$yellow" "$age_days" "$reset" \
+    "$dim" "$shortdate" "$reset"
+#   printf '%s %b%-45s%b  %b%6dd%b  %b%-10s%b  %b%s%b\n' \
+#     "$marker" \
+#     "$bcolor" "$branch" "$reset" \
+#     "$yellow" "$age_days" "$reset" \
+#     "$dim" "$shortdate" "$reset" \
+#     "$cyan" "$rel" "$reset"
+done
